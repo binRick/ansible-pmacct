@@ -1,0 +1,33 @@
+interface: {{myItem.Interface}}
+daemonize: false
+
+plugins: mysql[in], mysql[out]
+aggregate[in]: dst_host, dst_port
+aggregate[out]: src_host, src_port
+aggregate_filter[in]:  ({% for net in myItem.Networks %} or dst net {{net}}{% endfor %})
+aggregate_filter[out]: ({% for net in myItem.Networks %} or src net {{net}}{% endfor %})
+sql_table[in]:  acct_in
+sql_table[out]: acct_out
+sql_refresh_time: {{myItem.Refresh|default(60)}}
+sql_history: 1h
+sql_history_roundoff: h
+sql_table[in]: ports_hourly_in_%Y%m%d_%H
+sql_table[out]: ports_hourly_out_%Y%m%d_%H
+
+sql_table_schema[in]: /opt/pmacct/in.sql
+sql_table_schema[out]: /opt/pmacct/out.sql
+
+sql_db: {{myItem.Database}}
+#sql_table_version: 1
+sql_passwd: {{myItem.DatabasePass}}
+sql_user: {{myItem.DatabaseUser}}
+
+
+! sql_optimize_clauses: true
+! sql_preprocess: qnum=1000, minp=5
+!
+! networks_file: ./networks.example
+! ports_file: ./ports.example
+! sampling_rate: 10
+! sql_trigger_time: 1h
+! sql_trigger_exec: /home/paolo/codes/hello.sh

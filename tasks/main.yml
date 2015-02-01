@@ -1,0 +1,17 @@
+---
+    - name: Installing Pmacct requirements
+      yum: name={{item}} state=present
+      with_items: ['mariadb','mariadb-libs','mariadb-devel','sqlite-devel']
+    - name: Fetch Pmacct Source Code
+      synchronize: src=pmacct dest=/usr/src/
+    - name: Deploy Pmacct
+      command: chdir=/usr/src/pmacct/ creates={{item.Creates}} {{item.Command}}
+      with_items:
+        - { Creates: /usr/src/pmacct/Makefile, Command: ./configure --prefix=/opt/pmacct --enable-mysql --enable-ulog --enable-sqlite3 }
+        - { Creates: /opt/pmacct, Command: make -j 4 install }
+    - name: Deploying Pmacct Files
+      copy: src={{item}} dest=/opt/pmacct/{{item}}
+      with_items: ['in.sql','out.sql']
+    - name: Deploying Pmacct Templates
+      template: src={{item}}.j2 dest=/opt/pmacct/{{item}}
+      with_items: ['Accounting.conf']
